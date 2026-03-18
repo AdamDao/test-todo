@@ -147,15 +147,28 @@
       padding: 40px 0;
       font-size: 14px;
     }
+
+    .status-message {
+      display: none;
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      border-radius: 4px;
+      background: #fef7e0;
+      color: #8a5a00;
+      font-size: 13px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Todo</h1>
 
+    <div class="status-message" id="statusMessage"></div>
+
     <div class="input-container">
       <input type="text" id="todoInput" placeholder="Add a task..." />
-      <button id="addBtn">Add</button>
+      <button id="addBtn" type="button">Add</button>
     </div>
 
     <ul class="todo-list" id="todoList"></ul>
@@ -167,11 +180,34 @@
     const addBtn = document.getElementById('addBtn');
     const todoList = document.getElementById('todoList');
     const emptyState = document.getElementById('emptyState');
+    const statusMessage = document.getElementById('statusMessage');
 
-    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+    function showStatus(message) {
+      statusMessage.textContent = message;
+      statusMessage.style.display = 'block';
+    }
+
+    function loadTodos() {
+      try {
+        const savedTodos = localStorage.getItem('todos');
+        if (!savedTodos) return [];
+
+        const parsedTodos = JSON.parse(savedTodos);
+        return Array.isArray(parsedTodos) ? parsedTodos : [];
+      } catch (error) {
+        showStatus('Saved tasks could not be loaded, so the app started fresh.');
+        return [];
+      }
+    }
+
+    let todos = loadTodos();
 
     function saveTodos() {
-      localStorage.setItem('todos', JSON.stringify(todos));
+      try {
+        localStorage.setItem('todos', JSON.stringify(todos));
+      } catch (error) {
+        showStatus('Your browser blocked saving tasks locally. You can still use the list until you refresh.');
+      }
     }
 
     function renderTodos() {
